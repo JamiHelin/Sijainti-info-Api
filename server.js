@@ -4,7 +4,7 @@ const PORT = 3000;
 
 // Testireitti
 app.get('/', (req, res) => {
-  res.send('Serveri toimii');
+  res.send('Serveri toimii!');
 });
 
 // Vaihe 3: Nominatim
@@ -75,7 +75,7 @@ app.get('/location-info', async (req, res) => {
     const { city, country } = await getCityAndCountry(lat, lon);
     const { temperature, weather_code } = await getWeather(lat, lon);
     const description = await getWikipediaDescription(city);
-    
+
     // haku palauttaa nämä
     res.json({
         city,
