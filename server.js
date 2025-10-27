@@ -46,6 +46,20 @@ async function getWeather(lat, lon) {
   return { temperature, weather_code };
 }
 
+// vaihe 5: Wikipedia-kuvaus
+async function getWikipediaDescription(city) {
+  if (!city) return 'No description available';
+  const title = encodeURIComponent(city); // käsittelee välilyönnit/ä-ö
+  const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${title}`;
+  const resp = await fetch(url, {
+    headers: { 'User-Agent': 'sijainti-info-demo/1.0 (me@example.com)' }
+  });
+  if (!resp.ok) return 'No description available';
+  const data = await resp.json();
+  const extract = data?.extract?.trim();
+  return extract && extract.length > 0 ? extract : 'No description available';
+}
+
 // Reitti /location-info
 app.get('/location-info', async (req, res) => {
   const lat = req.query.lat;
@@ -60,18 +74,20 @@ app.get('/location-info', async (req, res) => {
   try {
     const { city, country } = await getCityAndCountry(lat, lon);
     const { temperature, weather_code } = await getWeather(lat, lon);
-
-    // Palautetaan toistaiseksi nämä
+    const description = await getWikipediaDescription(city);
+    
+    // haku palauttaa nämä
     res.json({
         city,
         country,
-        temperature,      // °C
-        weather_code,     // Open-Meteon koodi
+        temperature,
+        weather_code,
+        description,
         coordinates: { lat: Number(lat), lon: Number(lon) }
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Virhe haettaessa paikannimeä tai säätietoja' });
+    res.status(500).json({ error: 'Virhe haettaessa tietoja' });
   }
 });
 
